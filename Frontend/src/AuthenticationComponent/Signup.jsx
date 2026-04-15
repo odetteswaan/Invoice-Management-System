@@ -123,7 +123,7 @@ const Signup = () => {
           </Box>
           <Box className="fieldContainer">
             <Button fullWidth className="loginBtn"  type="submit">
-              Login In
+              Register
             </Button>
           </Box>
 

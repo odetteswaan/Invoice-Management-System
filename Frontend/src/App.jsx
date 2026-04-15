@@ -6,6 +6,9 @@ import UserDashboard from "./UserDashboard/UserDashboard";
 import AdminDashboard from "./UserDashboard/AdminDashboard";
 import { Navigate } from "react-router-dom";
 import ProtectedRoute from './ProtectedRoutes'
+import ShowInvoice from './ShowInvoice'
+import ViewInvoice from './UserDashboard/ViewInvoice'
+import MyInvoices from './MyInvoices'
 function App() {
   return (
     <BrowserRouter>
@@ -31,7 +34,18 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path='/showInvoice' element={<ShowInvoice/>}/>
+        <Route path='/ViewInvoice' element={
+          <ProtectedRoute role="admin">
+            <ViewInvoice/>
+          </ProtectedRoute>
+          }/>
 
+         <Route path='/my-invoice' element={
+          <ProtectedRoute role="user">
+            <MyInvoices/>
+          </ProtectedRoute>
+          }/>
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>

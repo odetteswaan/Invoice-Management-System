@@ -4,3 +4,6 @@ export const signupEndpoint="/auth/register"
 export const getInvoicesEndpoint="/invoices/"
 export const updateStatus=(invoiceID)=>(`/invoices/${invoiceID}/status`)
 export const uploadInvoice="/invoices/upload"
+export const updateInvoice=(invoiceID)=>(`/invoices/${invoiceID}`)
+export const deleteInvoice=(invoiceID)=>(`/invoices/${invoiceID}`)
+export const myInvoices="/invoices/my-invoices"

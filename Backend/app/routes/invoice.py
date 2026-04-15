@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from ..models import Invoice
 from ..extensions import db
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity,get_jwt
 import os
 from flask import send_from_directory, current_app
+from ..rag.vector_store import add_invoice_to_vector_db, delete_invoice_from_vector_db
 invoice_bp = Blueprint("invoice", __name__)
 
 @invoice_bp.route("/upload", methods=["POST"])
@@ -37,6 +38,7 @@ def upload_invoice():
     )
     db.session.add(invoice)
     db.session.commit()
+    add_invoice_to_vector_db(invoice)
     return jsonify({
         "msg": "Invoice uploaded successfully",
         "file_url": path
@@ -166,3 +168,83 @@ def get_file(filename):
     upload_folder = os.path.join(BASE_DIR, "uploads")
 
     return send_from_directory(upload_folder, filename)
+
+
+
+
+@invoice_bp.route("/<string:invoice_id>", methods=["PUT"])
+@jwt_required()
+def update_invoice(invoice_id):
+    import os
+
+    invoice = Invoice.query.filter_by(invoice_id=invoice_id).first()
+
+    if not invoice:
+        return jsonify({"msg": "Invoice not found"}), 404
+
+    # 🔹 Get form-data
+    name = request.form.get("name")
+    description = request.form.get("description")
+    amount = request.form.get("amount")
+    GST = request.form.get("GST")
+    file = request.files.get("file")
+
+    # ✅ Update fields
+    if name:
+        invoice.name = name
+    if description:
+        invoice.description = description
+    if amount:
+        invoice.amount = float(amount)
+    if GST:
+        invoice.GST = float(GST)
+
+    # 🔥 Replace PDF file
+    if file:
+        upload_folder = os.path.abspath("uploads")
+
+        # ❌ Delete old file
+        old_file = os.path.join(upload_folder, invoice.file_url)
+        if os.path.exists(old_file):
+            os.remove(old_file)
+
+        # ✅ Save new file
+        filename = file.filename
+        file.save(os.path.join(upload_folder, filename))
+
+        # ✅ Update DB
+        invoice.file_url = filename
+
+    db.session.commit()
+
+    return jsonify({"msg": "Invoice updated successfully"})
+
+
+@invoice_bp.route("/<string:invoice_id>", methods=["DELETE"])
+@jwt_required()
+def delete_invoice(invoice_id):
+    claims = get_jwt()
+    role = claims.get("role")
+
+    # 🔴 Only ADMIN allowed
+    if role.lower() != "admin":
+        return jsonify({"msg": "Only admin can delete invoices"}), 403
+
+    invoice = Invoice.query.filter_by(invoice_id=invoice_id).first()
+
+    if not invoice:
+        return jsonify({"msg": "Invoice not found"}), 404
+
+    # 🔥 Delete file
+    upload_folder = os.path.abspath("uploads")
+    if invoice.file_url:
+        file_path = os.path.join(upload_folder, invoice.file_url)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    # 🗑️ Delete from DB
+    db.session.delete(invoice)
+    db.session.commit()
+    delete_invoice_from_vector_db(invoice_id)
+
+    return jsonify({"msg": "Invoice deleted successfully"}), 200

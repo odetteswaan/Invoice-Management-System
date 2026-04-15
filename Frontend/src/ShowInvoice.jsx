@@ -7,14 +7,13 @@ import {
   Alert,
   IconButton,
 } from "@mui/material";
-import AirtelLogo from "../assets/Airtel-logo.png";
+import AirtelLogo from "./assets/Airtel-logo.png";
 import { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import {baseURL,uploadInvoice} from '../config' 
+import {baseURL,updateInvoice} from './config' 
 import axios from "axios";
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
-import { Link } from "react-router-dom";
 const validationSchema = Yup.object({
   invoice_id: Yup.string().required("Invoice ID is required"),
   name: Yup.string().required("Name is required"),
@@ -29,58 +28,63 @@ const validationSchema = Yup.object({
     .min(0, "GST cannot be negative"),
   file: Yup.mixed().required("File is required"),
 });
-const UserDashboard = () => {
+
+
+
+const handleLogout = () => {
+  localStorage.removeItem("user");
+  
+  window.location.href = "/";
+};
+const ShowInvoice = () => {
   const [username, setName] = useState("");
-  const[valid ,setValid]=useState(0)
+  const[valid,setValid]=useState()
+  const[item,setItem]=useState()
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    setName(user.username);
+    const item=JSON.parse(localStorage.getItem('item'))
+    setItem(item)
+  }, []);
   const formik = useFormik({
     initialValues: {
-      invoice_id: "",
-      name: "",
-      description: "",
-      amount: "",
-      GST: "",
+      invoice_id: item?item.invoice_id:'',
+      name: item?item.name:'',
+      description: item?item.description:"",
+      amount: item?item.amount:"",
+      GST: item?item.GST:"",
       file: null,
     },
+    enableReinitialize: true,
     validationSchema,
     onSubmit: (values) => {
       console.log("Form Data:", values);
       const user=JSON.parse(localStorage.getItem('user'))
       const formData = new FormData();
-
-formData.append("invoice_id", values.invoice_id);
-formData.append("name", values.name);
-formData.append("description", values.description);
-formData.append("amount", values.amount);
-formData.append("GST", values.GST);
-formData.append("file", values.file);
-axios.post(`${baseURL}${uploadInvoice}`,formData,{
-  headers:{
-    Authorization:user.token
-  }
-}).then((res)=>{
-console.log(res.data)
-setValid(1)
-
-}).catch((err)=>{
-  console.log(err)
-  setValid(2)
-})
-        
-    },
-  });
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    setName(user.username);
-  }, []);
-
- 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-
-    window.location.href = "/";
-  };
-  return (
-    <StyledWrapper>
+      
+      formData.append("invoice_id", values.invoice_id);
+      formData.append("name", values.name);
+      formData.append("description", values.description);
+      formData.append("amount", values.amount);
+      formData.append("GST", values.GST);
+      formData.append("file", values.file);
+      axios.put(`${baseURL}${updateInvoice(values.invoice_id)}`,formData,{
+        headers:{
+          Authorization:user.token
+        }
+      }).then((res)=>{
+    console.log(res.data)
+    setValid(1)
+    
+  }).catch((err)=>{
+      console.log(err)
+      setValid(2)
+    })
+    
+  },
+});
+return (
+  <StyledWrapper>
     
       <Box className="mainContainer">
         <Box className="headingContainer">
@@ -89,17 +93,13 @@ setValid(1)
             alt="airtel logo"
             style={{ width: "100px", height: "50px" }}
             />
-            <Box sx={{width:'300px', display:'flex',justifyContent:'space-between',}}>
-             <Link to='/user'><Typography>Upload Invoice</Typography></Link>
-             <Link to='/my-invoice'> <Typography>My Invoices</Typography></Link>
-            </Box>
           <IconButton sx={{marginRight:"100px"}} onClick={handleLogout}>
             <LogoutOutlinedIcon/>
           </IconButton>
         </Box>
              <Box sx={{marginTop:'90px'}}>
-            {(valid==1)&& <Alert severity="success">Data Submitted Successfully</Alert>}
-            {(valid==2)&& <Alert severity="error">Data Submission failed please check you data and files</Alert>}
+            {(valid==1)&& <Alert severity="success">Data updated Successfully</Alert>}
+            {(valid==2)&& <Alert severity="error">Data Updation failed failed please check you data and files</Alert>}
 
              </Box>
         <Box className="bodyContainer" component="form" onSubmit={formik.handleSubmit}>
@@ -219,13 +219,13 @@ setValid(1)
       </Box>
     </StyledWrapper>
   );
-};
+}
 const StyledWrapper = styled(Box)(({ theme }) => ({
   "& .mainContainer": {
     width: "100%",
     display: "flex",
     flexDirection: "column",
-     background: "linear-gradient(135deg, #3a1c71, #1f4037)",
+    background: "linear-gradient(135deg, #3a1c71, #1f4037)",
   },
   "& .headingContainer": {
     padding: "20px",
@@ -235,15 +235,16 @@ const StyledWrapper = styled(Box)(({ theme }) => ({
     display:'flex',
     justifyContent:'space-between',
     alignItems:'center',
-
+    zIndex:'1'
+    
   },
   "& .bodyContainer": {
     width: "100%",
-     background: "linear-gradient(135deg, #3a1c71, #1f4037)",
     display: "flex",
     justifyContent: "center",
     marginTop: "90px",
     marginBottom:'50px',
+    background: "linear-gradient(135deg, #3a1c71, #1f4037)",
   },
   "& .heading": {
     fontFamily: "Nunito sans",
@@ -265,10 +266,10 @@ const StyledWrapper = styled(Box)(({ theme }) => ({
   "& .formContainer": {
     width: "100%",
     maxWidth: "700px",
+    backgroundColor: "#F5F5F5",
     border: "1px solid #E0E0E0",
     borderRadius: "15px",
     padding: "30px",
-     backgroundColor: "#F5F5F5",
   },
   "& .fieldHeading": {
     fontFamily: "Nunito Sans",
@@ -289,4 +290,4 @@ const StyledWrapper = styled(Box)(({ theme }) => ({
     height: "50px",
   },
 }));
-export default UserDashboard;
+export default ShowInvoice
