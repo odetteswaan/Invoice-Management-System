@@ -114,7 +114,7 @@ return (
               </Typography>
             </Box>
             <Typography className="invoiceHeading">
-              Fill your invoice details to Apply
+              Edit this Invoice
             </Typography>
 
             <Box className="formContainer">

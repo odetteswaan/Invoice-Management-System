@@ -15,6 +15,7 @@ import {baseURL,uploadInvoice} from '../config'
 import axios from "axios";
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { Link } from "react-router-dom";
+import ChatbotUI from "../Chatbot";
 const validationSchema = Yup.object({
   invoice_id: Yup.string().required("Invoice ID is required"),
   name: Yup.string().required("Name is required"),
@@ -216,6 +217,10 @@ setValid(1)
             </Box>
           </Box>
         </Box>
+        <Box sx={{marginTop:'100px',width:'100%',display:'flex',jystifyContent:'flex-end'}}>
+          <ChatbotUI/>
+
+        </Box>
       </Box>
     </StyledWrapper>
   );
@@ -235,6 +240,7 @@ const StyledWrapper = styled(Box)(({ theme }) => ({
     display:'flex',
     justifyContent:'space-between',
     alignItems:'center',
+    zIndex:'1'
 
   },
   "& .bodyContainer": {

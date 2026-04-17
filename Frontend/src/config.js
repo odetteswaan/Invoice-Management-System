@@ -7,3 +7,4 @@ export const uploadInvoice="/invoices/upload"
 export const updateInvoice=(invoiceID)=>(`/invoices/${invoiceID}`)
 export const deleteInvoice=(invoiceID)=>(`/invoices/${invoiceID}`)
 export const myInvoices="/invoices/my-invoices"
+export const chatBotEndpoint="/chat/"

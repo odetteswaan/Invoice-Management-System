@@ -22,8 +22,8 @@ def chat():
     query = request.json.get("query")
 
     db = get_vector_db()
-    docs = db.similarity_search(query, k=2)
+    docs = db.similarity_search(query, k=10)
 
-    answer = generate_answer(query, docs)
+    answer = generate_answer(query, docs).content
 
     return jsonify({"response": answer})
