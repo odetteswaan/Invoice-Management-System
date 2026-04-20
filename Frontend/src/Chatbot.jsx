@@ -6,7 +6,7 @@ import {
   Typography,
   IconButton,
   TextField,
-  Divider
+  Divider,
 } from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
@@ -17,34 +17,44 @@ import { baseURL, chatBotEndpoint } from "./config";
 const ChatbotUI = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { text: "Hi! How can I help you?", sender: "bot" }
+    { text: "Hi! How can I help you?", sender: "bot" },
   ]);
   const [input, setInput] = useState("");
-const formatResponse = (text) => {
-  return text
-    .replace(/\n/g, "\n")
-    .replace(/\*/g, "•"); // optional: replace * with bullet
-};
+  const formatResponse = (text) => {
+    if (!text) return "";
+
+    // convert **bold** → <strong>bold</strong>
+    let formatted = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    // remove remaining single *
+    formatted = formatted.replace(/\*/g, "");
+
+    // handle new lines
+    formatted = formatted.replace(/\n/g, "<br/>");
+
+    return formatted;
+  };
   const handleSend = () => {
     if (!input.trim()) return;
-    const user=localStorage.getItem('user')
-    const body={
-        "query":input
-    }
-    axios.post(`${baseURL}${chatBotEndpoint}`,body,{
-        headers:{
-            Authorization:user.token
-        }
-    }).then(res=>{
-        console.log(res.data.response)
+    const user = JSON.parse(localStorage.getItem("user"));
+    const body = {
+      query: input,
+    };
+    axios
+      .post(`${baseURL}${chatBotEndpoint}`, body, {
+        headers: {
+          Authorization: user.token,
+        },
+      })
+      .then((res) => {
+        console.log(res.data.response);
         setMessages((prev) => [
           ...prev,
           { text: input, sender: "user" },
-          { text: `🤖 ${formatResponse(res.data.response)}`, sender: "bot" }
+          { text: `🤖 ${formatResponse(res.data.response)}`, sender: "bot" },
         ]);
-
-    }).catch(err=>console.log(err))
-
+      })
+      .catch((err) => console.log(err));
 
     setInput("");
   };
@@ -59,7 +69,7 @@ const formatResponse = (text) => {
           position: "fixed",
           bottom: 20,
           right: 20,
-          zIndex: 1000
+          zIndex: 1000,
         }}
       >
         {open ? <CloseIcon /> : <ChatIcon />}
@@ -78,7 +88,7 @@ const formatResponse = (text) => {
             display: "flex",
             flexDirection: "column",
             borderRadius: "16px",
-            overflow: "hidden"
+            overflow: "hidden",
           }}
         >
           {/* Header */}
@@ -86,7 +96,7 @@ const formatResponse = (text) => {
             sx={{
               background: "linear-gradient(135deg, #6a11cb, #2575fc)",
               color: "#fff",
-              padding: "10px 15px"
+              padding: "10px 15px",
             }}
           >
             <Typography variant="subtitle1" fontWeight={600}>
@@ -100,7 +110,7 @@ const formatResponse = (text) => {
               flex: 1,
               padding: 1.5,
               overflowY: "auto",
-              backgroundColor: "#f5f7fa"
+              backgroundColor: "#f5f7fa",
             }}
           >
             {messages.map((msg, index) => (
@@ -110,22 +120,22 @@ const formatResponse = (text) => {
                   display: "flex",
                   justifyContent:
                     msg.sender === "user" ? "flex-end" : "flex-start",
-                  mb: 1
+                  mb: 1,
                 }}
               >
                 <Box
                   sx={{
-                    background:
-                      msg.sender === "user"
-                        ? "#2575fc"
-                        : "#e0e0e0",
+                    background: msg.sender === "user" ? "#2575fc" : "#e0e0e0",
                     color: msg.sender === "user" ? "#fff" : "#000",
                     padding: "8px 12px",
                     borderRadius: "12px",
-                    maxWidth: "75%"
+                    maxWidth: "75%",
                   }}
                 >
-                  <Typography variant="body2">{msg.text}</Typography>
+                  <Typography
+                    variant="body2"
+                    dangerouslySetInnerHTML={{ __html: msg.text }}
+                  />
                 </Box>
               </Box>
             ))}
@@ -138,7 +148,7 @@ const formatResponse = (text) => {
             sx={{
               display: "flex",
               alignItems: "center",
-              padding: "8px"
+              padding: "8px",
             }}
           >
             <TextField
@@ -149,8 +159,8 @@ const formatResponse = (text) => {
               onChange={(e) => setInput(e.target.value)}
               sx={{
                 "& .MuiOutlinedInput-root": {
-                  borderRadius: "20px"
-                }
+                  borderRadius: "20px",
+                },
               }}
             />
             <IconButton color="primary" onClick={handleSend}>

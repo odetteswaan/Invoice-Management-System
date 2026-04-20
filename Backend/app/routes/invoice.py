@@ -4,7 +4,7 @@ from ..extensions import db
 from flask_jwt_extended import jwt_required, get_jwt_identity,get_jwt
 import os
 from flask import send_from_directory, current_app
-from ..rag.vector_store import add_invoice_to_vector_db, delete_invoice_from_vector_db
+# from ..rag.vector_store import add_invoice_to_vector_db, delete_invoice_from_vector_db
 invoice_bp = Blueprint("invoice", __name__)
 
 @invoice_bp.route("/upload", methods=["POST"])
@@ -38,7 +38,7 @@ def upload_invoice():
     )
     db.session.add(invoice)
     db.session.commit()
-    add_invoice_to_vector_db(invoice)
+    # add_invoice_to_vector_db(invoice)
     return jsonify({
         "msg": "Invoice uploaded successfully",
         "file_url": path
@@ -103,6 +103,8 @@ def update_status(invoice_id):
     if invoice.status.capitalize() not in ["Pending","Approved","Rejected"]:
         return jsonify({"msg":"status must be Pending or Approved or Rejected"}), 400
     db.session.commit()
+    # delete_invoice_from_vector_db(invoice_id)
+    # add_invoice_to_vector_db(invoice)
 
     return jsonify({"msg": "Status updated"})
 
@@ -245,6 +247,6 @@ def delete_invoice(invoice_id):
     # 🗑️ Delete from DB
     db.session.delete(invoice)
     db.session.commit()
-    delete_invoice_from_vector_db(invoice_id)
+    #delete_invoice_from_vector_db(invoice_id)
 
     return jsonify({"msg": "Invoice deleted successfully"}), 200
