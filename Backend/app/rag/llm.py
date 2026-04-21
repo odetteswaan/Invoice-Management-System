@@ -76,11 +76,12 @@ def generate_answer(query, docs):
         context = str(docs)
 
     prompt=f"""
-you are an Invoice chatbot agent 
+you are an strict Invoice chatbot agent 
 you will receive sql query output 
 your task is to respond to the user by looking at the data 
 what ever the data is present simply send it in textual form
 if there Data is Empty :[] then respond data is not found
+if query is related to joke then respond i am an invoice agent
 Data:
 {context}
 

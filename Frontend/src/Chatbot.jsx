@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useRef,useEffect } from "react";
 import {
   Box,
   Fab,
@@ -19,7 +19,11 @@ const ChatbotUI = () => {
   const [messages, setMessages] = useState([
     { text: "Hi! How can I help you?", sender: "bot" },
   ]);
+  const chatEndRef = useRef(null);
   const [input, setInput] = useState("");
+    useEffect(() => {
+  chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [messages]);
   const formatResponse = (text) => {
     if (!text) return "";
 
@@ -139,6 +143,7 @@ const ChatbotUI = () => {
                 </Box>
               </Box>
             ))}
+            <div ref={chatEndRef} />
           </Box>
 
           <Divider />
